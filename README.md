@@ -8,7 +8,7 @@ A parallel particle simulation using OpenMP and Open MPI.
 - openmp.cpp
 - mpi.cpp
 
-## Instructions for Making files
+## Instructions for Compiling Files
 1. Run `source modules.sh` so that MPI works.
 2. Run `make` on the directory containing the _Makefile_.
 
