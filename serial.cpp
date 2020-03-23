@@ -38,7 +38,7 @@ int main( int argc, char **argv )
     FILE *fsum = sumname ? fopen ( sumname, "a" ) : NULL;
 
     particle_t *particles = (particle_t*) malloc( n * sizeof(particle_t) );
-    bin_t temp; // type: std::vector<particle_t>
+    bin_t changed; // To keep track of particles which change bins.
     set_size( n );
     init_particles( n, particles );
     make_spatial_hash( n, particles );
@@ -54,7 +54,7 @@ int main( int argc, char **argv )
         davg = 0.0;
         dmin = 1.0;
 
-        // ---------------------OLD CODE----------------------------------------
+        // --------------------------OLD CODE-----------------------------------
 
         // //
         // //  compute forces
@@ -72,7 +72,7 @@ int main( int argc, char **argv )
         // for( int i = 0; i < n; i++ )
         //     move( particles[i] );
 
-        // ----------------------OLD CODE---------------------------------------
+        // --------------------------OLD CODE-----------------------------------
 
         //
         // Compute forces
@@ -81,29 +81,7 @@ int main( int argc, char **argv )
         {
             for (int grid_col = 0; grid_col < bin_count; grid_col++)
             {
-                bin_t& bin = particle_bins[grid_row*bin_count + grid_col];
-                // Reset acceleration of all particles in the bin.
-                for (int k = 0; k < bin.size(); k++)
-                    bin[k].ax = bin[k].ay = 0;
-                // Each non-edge particle bin is surround by 8 bins.
-                // Apply forces between particles in the current bin
-                // and particles in the surrounding 8 bins as well as
-                // between particles in the same bin.
-                for (int dx = -1; dx <= 1; dx++)
-                {
-                    for (int dy = -1; dy <= 1; dy++)
-                    {
-                        if (grid_row + dx >= 0 && grid_row + dx < bin_count &&
-                            grid_col + dy >= 0 && grid_col + dy < bin_count)
-                        {   // bin2 represents one of the surrounding 8 bins.
-                            bin_t& bin2 = particle_bins[(grid_row+dx)*bin_count + grid_col + dy];
-                            // Apply particle forces between the two bins.
-                            for (int i = 0; i < bin.size(); i++)
-                                for (int j = 0; j < bin2.size(); j++)
-                                    apply_force(bin[i], bin2[j], &dmin, &davg, &navg);
-                        }
-                    }
-                }
+                compute_bin_forces(grid_row, grid_col, dmin, davg, navg);
             }
         }
 
@@ -125,7 +103,7 @@ int main( int argc, char **argv )
                         i++;
                     else
                     {
-                        temp.push_back(bin[i]);  // Store particles that have changed bins in temp.
+                        changed.push_back(bin[i]); // Store particles that have changed bins.
                         bin[i] = bin[--tail]; // Remove the particle from the current bin.
                     }
                 }
@@ -135,13 +113,13 @@ int main( int argc, char **argv )
 
         // Put the particles that have changed bins
         // into their respective bins.
-        for (int i = 0; i < temp.size(); i++)
+        for (int i = 0; i < changed.size(); i++)
         {
-            int x = int(temp[i].x / bin_size);
-            int y = int(temp[i].y / bin_size);
-            particle_bins[x*bin_count + y].push_back(temp[i]);
+            int x = int(changed[i].x / bin_size);
+            int y = int(changed[i].y / bin_size);
+            particle_bins[x*bin_count + y].push_back(changed[i]);
         }
-        temp.clear();
+        changed.clear();
 
         if( find_option( argc, argv, "-no" ) == -1 )
         {
