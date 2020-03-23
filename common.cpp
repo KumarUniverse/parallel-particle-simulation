@@ -20,7 +20,7 @@ double size;
 //
 #define density 0.0005
 #define mass    0.01
-#define cutoff  0.01
+#define cutoff  0.01         // Range of interaction forces.
 #define min_r   (cutoff/100)
 #define dt      0.0005
 
@@ -191,10 +191,10 @@ char *read_string( int argc, char **argv, const char *option, char *default_valu
 }
 
 //
-// Our additions
+// Student additions
 //
-double grid_size, bin_size;
-int bin_count;
+double bin_size;
+int bin_count;   // Number of bins per row/col in spatial hash.
 // Represent a 2D particle grid as a 1D vector of particle bins.
 std::vector<bin_t> particle_bins;
 
@@ -202,9 +202,8 @@ std::vector<bin_t> particle_bins;
 // given particles of type particle_t.
 void make_spatial_hash(int n, particle_t* particles)
 {
-    grid_size = sqrt(n * density);
     bin_size = cutoff * 2;
-    bin_count = int(grid_size / bin_size) + 1;
+    bin_count = int(size / bin_size) + 1;
 
     particle_bins.resize(bin_count * bin_count);
 
@@ -212,8 +211,46 @@ void make_spatial_hash(int n, particle_t* particles)
     // in the 1D particle_bins vector.
     for (int i = 0; i < n; i++)
     {
-        int x = int(particles[i].x / bin_size);
-        int y = int(particles[i].y / bin_size);
-        particle_bins[x*bin_count + y].push_back(particles[i]);
+        bin_particle(particles[i]);
+        // int x = int(particles[i].x / bin_size);
+        // int y = int(particles[i].y / bin_size);
+        // particle_bins[x*bin_count + y].push_back(particles[i]);
+    }
+}
+
+// A function that is used to add a particle to the spatial hash.
+void bin_particle(particle_t& particle)
+{
+    int x = particle.x / size;
+    int y = particle.y / size;
+    particle_bins[x*bin_count + y].push_back(particle);
+}
+
+// A function that is used to compute all particle forces in a spatial hash bin.
+void compute_bin_forces(int grid_row, int grid_col,
+                        double& dmin, double& davg, int& navg)
+{
+    bin_t& bin = particle_bins[grid_row*bin_count + grid_col];
+    // Reset acceleration of all particles in the bin.
+    for (int k = 0; k < bin.size(); k++)
+        bin[k].ax = bin[k].ay = 0;
+    // Each non-edge particle bin is surround by 8 bins.
+    // Apply forces between particles in the current bin
+    // and particles in the surrounding 8 bins as well as
+    // between particles in the same bin.
+    for (int dx = -1; dx <= 1; dx++)
+    {
+        for (int dy = -1; dy <= 1; dy++)
+        {
+            if (grid_row + dx >= 0 && grid_row + dx < bin_count &&
+                grid_col + dy >= 0 && grid_col + dy < bin_count)
+            {   // bin2 represents one of the surrounding 8 bins.
+                bin_t& bin2 = particle_bins[(grid_row+dx)*bin_count + grid_col + dy];
+                // Apply particle forces between the two bins.
+                for (int i = 0; i < bin.size(); i++)
+                    for (int j = 0; j < bin2.size(); j++)
+                        apply_force(bin[i], bin2[j], &dmin, &davg, &navg);
+            }
+        }
     }
 }

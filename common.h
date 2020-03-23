@@ -7,6 +7,8 @@
 
 #include <vector>
 
+extern double size;
+
 inline int min( int a, int b ) { return a < b ? a : b; }
 inline int max( int a, int b ) { return a > b ? a : b; }
 
@@ -57,10 +59,10 @@ int read_int( int argc, char **argv, const char *option, int default_value );
 char *read_string( int argc, char **argv, const char *option, char *default_value );
 
 //
-//  our additions
+//  Student additions
 //
 typedef std::vector<particle_t> bin_t; // spatial hash bin data structure
-extern double grid_size, bin_size;
+extern double bin_size;
 extern int bin_count;
 // Represent a 2D particle grid as a 1D vector of particle bins.
 extern std::vector<bin_t> particle_bins;
@@ -68,5 +70,10 @@ extern std::vector<bin_t> particle_bins;
 // A function that is used to create a spatial hash
 // given particles of type particle_t.
 void make_spatial_hash(int n, particle_t* particles);
+// A function that is used to add a particle to the spatial hash.
+void bin_particle(particle_t& particle);
+// A function that is used to compute all particle forces in a spatial hash bin.
+void compute_bin_forces(int grid_row, int grid_col,
+                        double& dmin, double& davg, int& navg);
 
 #endif
