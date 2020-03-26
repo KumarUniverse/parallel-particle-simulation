@@ -1,6 +1,8 @@
 # parallel-particle-simulation
 A parallel particle simulation using OpenMP and Open MPI.
 
+![Particles](https://people.eecs.berkeley.edu/~mme/cs267-2016/hw2/animation.gif)
+
 ## Modified Files
 - common.cpp
 - common.h
