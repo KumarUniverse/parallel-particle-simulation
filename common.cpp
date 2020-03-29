@@ -212,17 +212,14 @@ void make_spatial_hash(int n, particle_t* particles)
     for (int i = 0; i < n; i++)
     {
         bin_particle(particles[i]);
-        // int x = int(particles[i].x / bin_size);
-        // int y = int(particles[i].y / bin_size);
-        // particle_bins[x*bin_count + y].push_back(particles[i]);
     }
 }
 
 // A function that is used to add a particle to the spatial hash.
 void bin_particle(particle_t& particle)
 {
-    int x = particle.x / size;
-    int y = particle.y / size;
+    int x = particle.x / bin_size;
+    int y = particle.y / bin_size;
     particle_bins[x*bin_count + y].push_back(particle);
 }
 
