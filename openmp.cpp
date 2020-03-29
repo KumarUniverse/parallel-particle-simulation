@@ -141,8 +141,6 @@ int main( int argc, char **argv )
                 if( fsave && (step%SAVEFREQ) == 0 )
                     save( fsave, n, particles );
             }
-
-            #pragma omp barrier // Wait for all the threads to finish.
         }
     }
     simulation_time = read_timer( ) - simulation_time;
