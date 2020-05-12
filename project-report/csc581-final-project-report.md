@@ -2,16 +2,17 @@
 # Brandon Barker, Akash Kumar, Andrew Valenci
 
 ## 1. Problem Statement
-The goal of this project is to optimize a toy particle simulator and parallelize it using OpenMP.
+The goal of this project is to optimize a toy particle simulator and parallelize it using OpenMP and MPI.
 
 ![Particles](https://people.eecs.berkeley.edu/~mme/cs267-2016/hw2/animation.gif)
 
 ## 2. Modified Files
-For this assignment, 4 files were modified:
+For this assignment, 5 files were modified:
 - common.cpp
 - common.h
 - serial.cpp
 - openmp.cpp
+- mpi.cpp
 
 ## 3. Optimizing the Serial Code
 
